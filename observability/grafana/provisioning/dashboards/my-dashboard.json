@@ -1,0 +1,134 @@
+{
+  "uid": "platinumcoin_metrics",
+  "title": "PlatinumCoin API Metrics",
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 5,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Total Requisições por Segundo",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"spring-app\"}[5m]))",
+          "legendFormat": "Total req/s",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "id": 2,
+      "title": "95th Percentile Latency (s)",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, uri) (rate(http_server_requests_seconds_bucket{job=\"spring-app\"}[5m])))",
+          "legendFormat": "{{uri}}",
+          "refId": "B"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "id": 3,
+      "title": "Erros por Endpoint",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"spring-app\", status=~\"4..|5..\"}[5m])) by (uri, status)",
+          "legendFormat": "{{uri}} {{status}}",
+          "refId": "C"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 }
+    },
+    {
+      "id": 4,
+      "title": "Chamadas FindOrder (5m)",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "description": "Aumento no número de chamadas ao método FindOrder nos últimos 5 minutos",
+      "targets": [
+        {
+          "expr": "increase(orders_find_time_seconds_count{job=\"spring-app\"}[5m])",
+          "legendFormat": "Com Cache",
+          "refId": "D"
+        },
+        {
+          "expr": "increase(orders_find_nocache_time_seconds_count{job=\"spring-app\"}[5m])",
+          "legendFormat": "Sem Cache",
+          "refId": "E"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 }
+    },
+    {
+      "id": 5,
+      "title": "Métodos Find – Latência Média (s)",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "description": "média = rate(sum)/rate(count)",
+      "targets": [
+        {
+          "expr": "rate(orders_find_time_seconds_sum{job=\"spring-app\"}[5m]) / rate(orders_find_time_seconds_count{job=\"spring-app\"}[5m])",
+          "legendFormat": "com cache/BD",
+          "refId": "F"
+        },
+        {
+          "expr": "rate(orders_find_nocache_time_seconds_sum{job=\"spring-app\"}[5m]) / rate(orders_find_nocache_time_seconds_count{job=\"spring-app\"}[5m])",
+          "legendFormat": "só BD",
+          "refId": "G"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 }
+    },
+    {
+      "id": 6,
+      "title": "Total Orders Created",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(orders_total)",
+          "refId": "H"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 16, "w": 12, "h": 6 }
+    },
+    {
+      "id": 7,
+      "title": "DB CPU Utilization (%)",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "description": "Requer métricas do node-exporter no host do banco",
+      "targets": [
+        {
+          "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{instance=~\".*:.*\",mode=\"idle\"}[5m])) by (instance))",
+          "legendFormat": "{{instance}}",
+          "refId": "I"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 }
+    },
+    {
+      "id": 8,
+      "title": "DB Memory Usage (%)",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "description": "Requer métricas do node-exporter no host do banco",
+      "targets": [
+        {
+          "expr": "100 * ((node_memory_MemTotal_bytes{instance=~\".*:.*\"} - node_memory_MemAvailable_bytes{instance=~\".*:.*\"}) / node_memory_MemTotal_bytes{instance=~\".*:.*\"})",
+          "legendFormat": "{{instance}}",
+          "refId": "J"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 24, "w": 12, "h": 8 }
+    }
+  ]
+}
